@@ -25,10 +25,10 @@ load_dotenv()
 
 # Apify actor IDs for each scrape type
 ACTORS = {
-    "person": "2SyF0bVxmgGr8IVCZ",   # LinkedIn Profile Scraper
-    "company": "l1NZEFv4JM0glzMdw",   # LinkedIn Company Scraper
-    "posts": "fetchfy~linkedin-post-scraper",  # LinkedIn Post Scraper
-    "search": "curious_coder~linkedin-search-scraper",  # LinkedIn Search Scraper
+    "person": "curious_coder~linkedin-profile-scraper",  # LinkedIn Profile Scraper (free plan OK)
+    "company": "l1NZEFv4JM0glzMdw",                     # LinkedIn Company Scraper
+    "posts": "fetchfy~linkedin-post-scraper",             # LinkedIn Post Scraper
+    "search": "curious_coder~linkedin-search-scraper",   # LinkedIn Search Scraper
 }
 
 # Input schema per actor type
@@ -56,8 +56,9 @@ def run_scraper(scrape_type: str, urls: list[str], output_path: str | None) -> l
     print(f"Starting Apify actor '{actor_id}' for {len(urls)} URL(s)...")
     run = client.actor(actor_id).call(run_input=actor_input)
 
-    print(f"Run finished. Fetching results from dataset '{run['defaultDatasetId']}'...")
-    items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+    dataset_id = run.default_dataset_id if hasattr(run, "default_dataset_id") else run["defaultDatasetId"]
+    print(f"Run finished. Fetching results from dataset '{dataset_id}'...")
+    items = list(client.dataset(dataset_id).iterate_items())
     print(f"Got {len(items)} item(s).")
 
     if output_path:
