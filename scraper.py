@@ -25,32 +25,14 @@ load_dotenv()
 
 # Apify actor IDs for each scrape type
 ACTORS = {
-    "person": "2SyF0bVxmgGr8IVCZ",                   # LinkedIn Profile Scraper
-    "company": "l1NZEFv4JM0glzMdw",                   # LinkedIn Company Scraper
-    "posts": "fetchfy~linkedin-post-scraper",           # LinkedIn Post Scraper
-    "search": "curious_coder~linkedin-search-scraper",  # LinkedIn Search Scraper
+    "person": "harvestapi~linkedin-profile-posts",     # LinkedIn Profile & Posts Scraper
+    "company": "harvestapi~linkedin-profile-posts",    # LinkedIn Company Scraper
+    "posts": "harvestapi~linkedin-profile-posts",      # LinkedIn Post Scraper
+    "search": "harvestapi~linkedin-profile-posts",     # LinkedIn Search Scraper
 }
 
 def build_input(scrape_type: str, urls: list[str]) -> dict:
-    cookie = os.getenv("LINKEDIN_COOKIE")
-    if not cookie:
-        sys.exit(
-            "Error: LINKEDIN_COOKIE not set.\n"
-            "Jak zdobyć ciasteczko li_at:\n"
-            "  1. Zaloguj się na linkedin.com w przeglądarce\n"
-            "  2. Otwórz DevTools (F12) → Application → Cookies → linkedin.com\n"
-            "  3. Skopiuj wartość ciasteczka 'li_at'\n"
-            "  4. Dodaj do .env: LINKEDIN_COOKIE=AQE...\n"
-        )
-    if scrape_type == "person":
-        return {"profileUrls": urls, "cookie": cookie}
-    elif scrape_type == "company":
-        return {"startUrls": [{"url": u} for u in urls], "cookie": cookie}
-    elif scrape_type == "posts":
-        return {"profileUrls": urls, "maxPosts": 50, "cookie": cookie}
-    elif scrape_type == "search":
-        return {"startUrls": [{"url": u} for u in urls], "maxResults": 100, "cookie": cookie}
-    raise ValueError(f"Unknown scrape type: {scrape_type}")
+    return {"profileUrls": urls}
 
 
 def run_scraper(scrape_type: str, urls: list[str], output_path: str | None) -> list[dict]:
