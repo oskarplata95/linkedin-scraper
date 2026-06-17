@@ -1,0 +1,16 @@
+{
+  "person_urls": [
+    "https://www.linkedin.com/in/williamhgates/",
+    "https://www.linkedin.com/in/satyanadella/"
+  ],
+  "company_urls": [
+    "https://www.linkedin.com/company/microsoft/",
+    "https://www.linkedin.com/company/google/"
+  ],
+  "posts_urls": [
+    "https://www.linkedin.com/in/williamhgates/"
+  ],
+  "search_urls": [
+    "https://www.linkedin.com/search/results/people/?keywords=software+engineer"
+  ]
+}
