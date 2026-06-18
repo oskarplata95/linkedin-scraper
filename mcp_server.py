@@ -16,7 +16,8 @@ from mcp import types
 
 load_dotenv(Path(__file__).parent / ".env")
 
-ACTOR_POSTS = "harvestapi~linkedin-profile-posts"
+ACTOR_PROFILE_POSTS = "harvestapi~linkedin-profile-posts"
+ACTOR_COMPANY_POSTS = "harvestapi~linkedin-company-posts"
 
 app = Server("linkedin-scraper")
 
@@ -57,6 +58,25 @@ async def list_tools() -> list[types.Tool]:
                 "required": ["profile_url"],
             },
         ),
+        types.Tool(
+            name="scrape_linkedin_company_posts",
+            description="Pobiera posty z profilu firmy na LinkedIn.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "company_url": {
+                        "type": "string",
+                        "description": "URL profilu firmy na LinkedIn, np. https://www.linkedin.com/company/microsoft/",
+                    },
+                    "max_posts": {
+                        "type": "integer",
+                        "description": "Maksymalna liczba postów do pobrania (domyślnie: wszystkie)",
+                        "default": 50,
+                    },
+                },
+                "required": ["company_url"],
+            },
+        ),
     ]
 
 
@@ -65,15 +85,23 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     if name == "scrape_linkedin_posts":
         profile_url = arguments["profile_url"]
         max_posts = arguments.get("max_posts", 50)
-
         actor_input = {"profileUrls": [profile_url]}
         items = await asyncio.get_event_loop().run_in_executor(
-            None, _run_actor, ACTOR_POSTS, actor_input
+            None, _run_actor, ACTOR_PROFILE_POSTS, actor_input
         )
-
         if max_posts:
             items = items[:max_posts]
+        return [types.TextContent(type="text", text=json.dumps(items, ensure_ascii=False, indent=2))]
 
+    if name == "scrape_linkedin_company_posts":
+        company_url = arguments["company_url"]
+        max_posts = arguments.get("max_posts", 50)
+        actor_input = {"companyUrls": [company_url]}
+        items = await asyncio.get_event_loop().run_in_executor(
+            None, _run_actor, ACTOR_COMPANY_POSTS, actor_input
+        )
+        if max_posts:
+            items = items[:max_posts]
         return [types.TextContent(type="text", text=json.dumps(items, ensure_ascii=False, indent=2))]
 
     raise ValueError(f"Unknown tool: {name}")
