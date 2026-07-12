@@ -18,6 +18,7 @@ load_dotenv(Path(__file__).parent / ".env")
 
 ACTOR_PROFILE_POSTS = "harvestapi~linkedin-profile-posts"
 ACTOR_COMPANY_POSTS = "harvestapi~linkedin-company-posts"
+ACTOR_PROFILE_REACTIONS = "harvestapi~linkedin-profile-reactions"
 
 app = Server("linkedin-scraper")
 
@@ -77,6 +78,25 @@ async def list_tools() -> list[types.Tool]:
                 "required": ["company_url"],
             },
         ),
+        types.Tool(
+            name="scrape_linkedin_profile_reactions",
+            description="Pobiera posty, które dana osoba polajkowała / zareagowała na LinkedIn.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "profile_url": {
+                        "type": "string",
+                        "description": "URL profilu LinkedIn, np. https://www.linkedin.com/in/jankowalski/",
+                    },
+                    "max_items": {
+                        "type": "integer",
+                        "description": "Maksymalna liczba reakcji do pobrania (domyślnie: wszystkie)",
+                        "default": 50,
+                    },
+                },
+                "required": ["profile_url"],
+            },
+        ),
     ]
 
 
@@ -102,6 +122,17 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         )
         if max_posts:
             items = items[:max_posts]
+        return [types.TextContent(type="text", text=json.dumps(items, ensure_ascii=False, indent=2))]
+
+    if name == "scrape_linkedin_profile_reactions":
+        profile_url = arguments["profile_url"]
+        max_items = arguments.get("max_items", 50)
+        actor_input = {"profileUrls": [profile_url]}
+        items = await asyncio.get_event_loop().run_in_executor(
+            None, _run_actor, ACTOR_PROFILE_REACTIONS, actor_input
+        )
+        if max_items:
+            items = items[:max_items]
         return [types.TextContent(type="text", text=json.dumps(items, ensure_ascii=False, indent=2))]
 
     raise ValueError(f"Unknown tool: {name}")
